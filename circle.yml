@@ -31,10 +31,6 @@ test:
     - emulator -avd circleci-android24 -no-audio -no-window:
           background: true
           parallel: true
-    - circle-android wait-for-boot
-    # unlock emulator
-    - sleep 30
-    - adb shell input keyevent 82
 
   override:
    - ./gradlew test
