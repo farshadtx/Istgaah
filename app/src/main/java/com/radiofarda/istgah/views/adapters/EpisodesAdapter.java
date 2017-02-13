@@ -3,7 +3,6 @@ package com.radiofarda.istgah.views.adapters;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.radiofarda.istgah.R;
 import com.radiofarda.istgah.models.Episode;
-import com.radiofarda.istgah.network.podcast.PodcastsFetcher;
-import com.radiofarda.istgah.network.podcast.ProgramList;
 
 /**
  * Created by maz on 2/11/17.
@@ -28,7 +25,7 @@ public class EpisodesAdapter extends ArrayAdapter<Episode> {
 
     public static EpisodesAdapter newInstance(Context context) {
         EpisodesAdapter episodesAdapter = new EpisodesAdapter(context);
-        new LoadProgramTask().execute(episodesAdapter);
+        Episode.loadEpisodeAdapter(episodesAdapter);
         return episodesAdapter;
     }
 
@@ -43,19 +40,5 @@ public class EpisodesAdapter extends ArrayAdapter<Episode> {
         firstLine.setText(getItem(position).getDescription());
         secondLine.setText(getItem(position).getDate());
         return rowView;
-    }
-
-    private static class LoadProgramTask extends AsyncTask<ArrayAdapter, Void, Void> {
-        @Override
-        protected Void doInBackground(ArrayAdapter... adapters) {
-            for (ArrayAdapter item : adapters) {
-                new PodcastsFetcher().fetch(programList -> {
-                    for (ProgramList program : programList) {
-                        item.addAll(new Episode(program));
-                    }
-                });
-            }
-            return (null);
-        }
     }
 }
