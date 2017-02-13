@@ -1,4 +1,4 @@
-package com.radiofarda.istgah.istgaah;
+package com.radiofarda.istgah;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

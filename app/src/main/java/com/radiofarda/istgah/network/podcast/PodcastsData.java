@@ -1,7 +1,8 @@
 
-package com.radiofarda.istgah.istgaah.tools;
+package com.radiofarda.istgah.network.podcast;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 

@@ -1,4 +1,4 @@
-package com.radiofarda.istgah.istgaah.tools;
+package com.radiofarda.istgah.network.podcast;
 
 import io.reactivex.Observable;
 import retrofit2.http.GET;
