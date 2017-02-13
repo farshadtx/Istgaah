@@ -8,10 +8,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import com.radiofarda.istgah.network.podcast.PodcastsFetcher;
 import com.radiofarda.istgah.views.adapters.SectionsPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,11 +52,6 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(view -> {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
-            PodcastsFetcher fetcher = new PodcastsFetcher();
-            fetcher.fetch(result -> {
-                Log.e("Temp", result.get(0).getDescription());
-
-            });
         });
 
     }

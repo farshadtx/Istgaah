@@ -4,7 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import com.radiofarda.istgah.fragments.PlaceholderFragment;
-import com.radiofarda.istgah.fragments.PodcastsFragment;
+import com.radiofarda.istgah.fragments.EpisodesFragment;
 
 /**
  * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -20,7 +20,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return PodcastsFragment.newInstance();
+                return EpisodesFragment.newInstance();
             case 1:
                 return PlaceholderFragment.newInstance(position + 1);
             case 2:

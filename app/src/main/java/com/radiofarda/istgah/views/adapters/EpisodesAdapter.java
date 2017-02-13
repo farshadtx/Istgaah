@@ -10,21 +10,26 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.radiofarda.istgah.R;
+import com.radiofarda.istgah.models.Episode;
 import com.radiofarda.istgah.network.podcast.PodcastsFetcher;
 import com.radiofarda.istgah.network.podcast.ProgramList;
 
 /**
  * Created by maz on 2/11/17.
  */
-public class ProgramListAdapter extends ArrayAdapter<ProgramList> {
+public class EpisodesAdapter extends ArrayAdapter<Episode> {
     private final Context context;
 
-    public ProgramListAdapter(Context context) {
+    private EpisodesAdapter(Context context) {
         super(context, -1, new ArrayList<>());
         this.context = context;
-        new LoadProgramTask().execute(this);
+    }
+
+    public static EpisodesAdapter newInstance(Context context) {
+        EpisodesAdapter episodesAdapter = new EpisodesAdapter(context);
+        new LoadProgramTask().execute(episodesAdapter);
+        return episodesAdapter;
     }
 
     @Override
@@ -39,21 +44,18 @@ public class ProgramListAdapter extends ArrayAdapter<ProgramList> {
         secondLine.setText(getItem(position).getDate());
         return rowView;
     }
-    private class LoadProgramTask extends AsyncTask<ArrayAdapter, ProgramList, Void> {
+
+    private static class LoadProgramTask extends AsyncTask<ArrayAdapter, Void, Void> {
         @Override
         protected Void doInBackground(ArrayAdapter... adapters) {
             for (ArrayAdapter item : adapters) {
                 new PodcastsFetcher().fetch(programList -> {
-                    item.addAll(programList);
+                    for (ProgramList program : programList) {
+                        item.addAll(new Episode(program));
+                    }
                 });
             }
             return (null);
-        }
-
-        @Override
-        protected void onPostExecute(Void unused) {
-            Toast.makeText(getContext(), "Done!", Toast.LENGTH_SHORT)
-                 .show();
         }
     }
 }
