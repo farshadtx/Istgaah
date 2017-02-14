@@ -33,12 +33,15 @@ public class EpisodesAdapter extends ArrayAdapter<Episode> {
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context
                                                            .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        Episode episode = getItem(position);
+
         View rowView = inflater.inflate(R.layout.view_podcast, parent, false);
         TextView firstLine = (TextView) rowView.findViewById(R.id.firstLine);
         TextView secondLine = (TextView) rowView.findViewById(R.id.secondLine);
         ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
-        firstLine.setText(getItem(position).getDescription());
-        secondLine.setText(getItem(position).getDate());
+        firstLine.setText(episode.getDescription());
+        secondLine.setText(episode.getDate());
+        episode.loadIcon(imageView);
         return rowView;
     }
 }

@@ -1,7 +1,13 @@
 package com.radiofarda.istgah.models;
 
+import java.net.URL;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import com.radiofarda.istgah.network.podcast.PodcastsFetcher;
 import com.radiofarda.istgah.network.podcast.ProgramList;
 import com.radiofarda.istgah.views.adapters.EpisodesAdapter;
@@ -39,4 +45,31 @@ public class Episode {
             }
         }.execute(episodesAdapter);
     }
+
+    public void loadIcon(ImageView imageView) {
+        try {
+            URL url = new URL(programList.getArtwork500().replace("https","http"));
+            new AsyncTask<URL, Void, Bitmap>() {
+                @Override
+                protected Bitmap doInBackground(URL... params) {
+                    try {
+                        for (URL url : params) {
+                            return BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Bitmap bitmap) {
+                    imageView.setImageBitmap(bitmap);
+                }
+            }.execute(url);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
