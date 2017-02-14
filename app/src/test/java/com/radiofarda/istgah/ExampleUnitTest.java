@@ -1,4 +1,4 @@
-package com.radiofarda.istgah.istgaah;
+package com.radiofarda.istgah;
 
 import org.junit.Test;
 
