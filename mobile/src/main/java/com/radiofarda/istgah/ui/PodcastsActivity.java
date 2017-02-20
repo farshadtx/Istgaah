@@ -25,7 +25,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.text.TextUtils;
-
 import com.radiofarda.istgah.R;
 import com.radiofarda.istgah.bejbej.models.Episode;
 import com.radiofarda.istgah.bejbej.models.EpisodeQuality;
@@ -81,7 +80,7 @@ public class PodcastsActivity extends BaseActivity
 
     @Override
     public void onMediaItemSelected(MediaBrowserCompat.MediaItem item) {
-        String episodeId = item.getMediaId().split("\\|")[1];
+        String episodeId = item.getMediaId();
         Episode episode = Episode.findById(episodeId);
         LogHelper.e(TAG, "onMediaItemSelected, mediaId=" + episodeId);
         if (episode.findAvailableFile() == null) {
@@ -89,7 +88,7 @@ public class PodcastsActivity extends BaseActivity
         }
         if (item.isPlayable()) {
             MediaControllerCompat.getMediaController(this).getTransportControls()
-                    .playFromMediaId(item.getMediaId(), null);
+                                 .playFromUri(item.getDescription().getMediaUri(), null);
         } else if (item.isBrowsable()) {
             navigateToBrowser(item.getMediaId());
         } else {
@@ -124,10 +123,10 @@ public class PodcastsActivity extends BaseActivity
         if (intent != null && intent.getBooleanExtra(EXTRA_START_FULLSCREEN, false)) {
             Parcelable parcelableExtra = intent.getParcelableExtra(EXTRA_CURRENT_MEDIA_DESCRIPTION);
             Intent fullScreenIntent = new Intent(this, FullScreenPlayerActivity.class)
-                    .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP |
-                            Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    .putExtra(EXTRA_CURRENT_MEDIA_DESCRIPTION,
-                            parcelableExtra);
+                                              .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP |
+                                                                Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                              .putExtra(EXTRA_CURRENT_MEDIA_DESCRIPTION,
+                                                      parcelableExtra);
             startActivity(fullScreenIntent);
         }
     }
@@ -138,7 +137,7 @@ public class PodcastsActivity extends BaseActivity
         // (which contain the query details) in a parameter, so we can reuse it later, when the
         // MediaSession is connected.
         if (intent.getAction() != null
-                && intent.getAction().equals(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH)) {
+                    && intent.getAction().equals(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH)) {
             mVoiceSearchParams = intent.getExtras();
             LogHelper.d(TAG, "Starting from voice search query=",
                     mVoiceSearchParams.getString(SearchManager.QUERY));
@@ -192,7 +191,7 @@ public class PodcastsActivity extends BaseActivity
             // when the activity is stopped/started or recreated:
             String query = mVoiceSearchParams.getString(SearchManager.QUERY);
             getSupportMediaController().getTransportControls()
-                    .playFromSearch(query, mVoiceSearchParams);
+                                       .playFromSearch(query, mVoiceSearchParams);
             mVoiceSearchParams = null;
         }
         getBrowseFragment().onConnected();

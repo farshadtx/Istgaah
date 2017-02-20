@@ -16,17 +16,9 @@
 
 package com.radiofarda.istgah.model;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.MediaDescriptionCompat;
-import android.support.v4.media.MediaMetadataCompat;
-
-import com.radiofarda.istgah.R;
-import com.radiofarda.istgah.utils.LogHelper;
-import com.radiofarda.istgah.utils.MediaIDHelper;
+import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_MUSICS_BY_GENRE;
+import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_ROOT;
+import static com.radiofarda.istgah.utils.MediaIDHelper.createMediaID;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,9 +30,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_MUSICS_BY_GENRE;
-import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_ROOT;
-import static com.radiofarda.istgah.utils.MediaIDHelper.createMediaID;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import com.radiofarda.istgah.R;
+import com.radiofarda.istgah.utils.LogHelper;
+import com.radiofarda.istgah.utils.MediaIDHelper;
 
 /**
  * Simple data provider for music tracks. The actual metadata source is delegated to a
@@ -136,7 +135,7 @@ public class MusicProvider {
         query = query.toLowerCase(Locale.US);
         for (MutableMediaMetadata track : mMusicListById.values()) {
             if (track.metadata.getString(metadataField).toLowerCase(Locale.US)
-                    .contains(query)) {
+                              .contains(query)) {
                 result.add(track.metadata);
             }
         }
@@ -156,21 +155,21 @@ public class MusicProvider {
         MediaMetadataCompat metadata = getMusic(musicId);
         metadata = new MediaMetadataCompat.Builder(metadata)
 
-                // set high resolution bitmap in METADATA_KEY_ALBUM_ART. This is used, for
-                // radiofarda, on the lockscreen background when the media session is active.
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                           // set high resolution bitmap in METADATA_KEY_ALBUM_ART. This is used, for
+                           // radiofarda, on the lockscreen background when the media session is active.
+                           .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
 
-                // set small version of the album art in the DISPLAY_ICON. This is used on
-                // the MediaDescription and thus it should be small to be serialized if
-                // necessary
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, icon)
+                           // set small version of the album art in the DISPLAY_ICON. This is used on
+                           // the MediaDescription and thus it should be small to be serialized if
+                           // necessary
+                           .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, icon)
 
-                .build();
+                           .build();
 
         MutableMediaMetadata mutableMetadata = mMusicListById.get(musicId);
         if (mutableMetadata == null) {
             throw new IllegalStateException("Unexpected error: Inconsistent data structures in " +
-                    "MusicProvider");
+                                                    "MusicProvider");
         }
 
         mutableMetadata.metadata = metadata;
@@ -267,65 +266,40 @@ public class MusicProvider {
             return mediaItems;
         }
 
-        if (MEDIA_ID_ROOT.equals(mediaId)) {
-            for (Map.Entry<String, MutableMediaMetadata> entry : mMusicListById.entrySet()) {
-                mediaItems.add(createMediaItem(entry.getValue().metadata));
-            }
-        } else if (MEDIA_ID_MUSICS_BY_GENRE.equals(mediaId)) {
-            for (String genre : getGenres()) {
-                mediaItems.add(createBrowsableMediaItemForGenre(genre, resources));
-            }
-
-        } else if (mediaId.startsWith(MEDIA_ID_MUSICS_BY_GENRE)) {
-            String genre = MediaIDHelper.getHierarchy(mediaId)[1];
-            for (MediaMetadataCompat metadata : getMusicsByGenre(genre)) {
-                mediaItems.add(createMediaItem(metadata));
-            }
-
-        } else {
-            LogHelper.w(TAG, "Skipping unmatched mediaId: ", mediaId);
+        for (Map.Entry<String, MutableMediaMetadata> entry : mMusicListById.entrySet()) {
+            mediaItems.add(createMediaItem(entry.getValue().metadata));
         }
         return mediaItems;
+
     }
 
     private MediaBrowserCompat.MediaItem createBrowsableMediaItemForRoot(Resources resources) {
         MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-                .setMediaId(MEDIA_ID_MUSICS_BY_GENRE)
-                .setTitle(resources.getString(R.string.browse_genres))
-                .setSubtitle(resources.getString(R.string.browse_genre_subtitle))
-                .setIconUri(Uri.parse("android.resource://" +
-                        "com.radiofarda.istgah/drawable/ic_by_genre"))
-                .build();
+                                                     .setMediaId(MEDIA_ID_MUSICS_BY_GENRE)
+                                                     .setTitle(resources.getString(R.string.browse_genres))
+                                                     .setSubtitle(resources.getString(R.string.browse_genre_subtitle))
+                                                     .setIconUri(Uri.parse("android.resource://" +
+                                                                                   "com.radiofarda.istgah/drawable/ic_by_genre"))
+                                                     .build();
         return new MediaBrowserCompat.MediaItem(description,
-                MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
+                                                       MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
     }
 
     private MediaBrowserCompat.MediaItem createBrowsableMediaItemForGenre(String genre,
                                                                           Resources resources) {
         MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-                .setMediaId(createMediaID(null, MEDIA_ID_MUSICS_BY_GENRE, genre))
-                .setTitle(genre)
-                .setSubtitle(resources.getString(
-                        R.string.browse_musics_by_genre_subtitle, genre))
-                .build();
+                                                     .setMediaId(createMediaID(null, MEDIA_ID_MUSICS_BY_GENRE, genre))
+                                                     .setTitle(genre)
+                                                     .setSubtitle(resources.getString(
+                                                             R.string.browse_musics_by_genre_subtitle, genre))
+                                                     .build();
         return new MediaBrowserCompat.MediaItem(description,
-                MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
+                                                       MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
     }
 
     private MediaBrowserCompat.MediaItem createMediaItem(MediaMetadataCompat metadata) {
-        // Since mediaMetadata fields are immutable, we need to create a copy, so we
-        // can set a hierarchy-aware mediaID. We will need to know the media hierarchy
-        // when we get a onPlayFromMusicID call, so we can create the proper queue based
-        // on where the music was selected from (by artist, by genre, random, etc)
-        String genre = metadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
-        String hierarchyAwareMediaID = MediaIDHelper.createMediaID(
-                metadata.getDescription().getMediaId(), MEDIA_ID_MUSICS_BY_GENRE, genre);
-        MediaMetadataCompat copy = new MediaMetadataCompat.Builder(metadata)
-                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, hierarchyAwareMediaID)
-                .build();
-        return new MediaBrowserCompat.MediaItem(copy.getDescription(),
-                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
-
+        return new MediaBrowserCompat.MediaItem(metadata.getDescription(),
+                                                       MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
     }
 
     enum State {

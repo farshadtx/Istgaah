@@ -55,7 +55,6 @@ class SimplePlayback implements Playback {
 
     @Override
     public void setCurrentStreamPosition(int pos) {
-
     }
 
     @Override

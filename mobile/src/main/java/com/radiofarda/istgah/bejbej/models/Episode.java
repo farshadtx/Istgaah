@@ -1,17 +1,15 @@
 package com.radiofarda.istgah.bejbej.models;
 
-import android.os.AsyncTask;
-import android.support.v4.media.MediaMetadataCompat;
-import android.util.Log;
-
-import com.radiofarda.istgah.model.MusicProviderSource;
-import com.radiofarda.istgah.bejbej.network.podcast.Info;
-import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.support.v4.media.MediaMetadataCompat;
+import android.util.Log;
+import com.radiofarda.istgah.bejbej.network.podcast.Info;
+import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
@@ -21,9 +19,6 @@ import io.realm.annotations.Required;
 import okio.ByteString;
 
 public class Episode extends RealmObject {
-
-
-    private static final String SOURCE = "https://www.youtube.com/audiolibrary/music/Jazz_In_Paris.mp3";
     @PrimaryKey
     @Required
     private String id;
@@ -60,30 +55,33 @@ public class Episode extends RealmObject {
     public MediaMetadataCompat toMediaMetadataCompat() {
 
 
-        int trackNumber = 1;
-        int totalTrackCount = 1;
-
-
         // Adding the music source to the MediaMetadata (and consequently using it in the
         // mediaSession.setMetadata) is not a good idea for a real world music app, because
         // the session metadata can be accessed by notification listeners. This is done in this
         // sample for convenience only.
         //noinspection ResourceType
+
         return new MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
-                .putString(MusicProviderSource.CUSTOM_METADATA_EPISODE_ID, id)
-                .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, findAvailableFile() != null ? findAvailableFile().getLocalCache() : null)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, desc)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, desc)
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-                .putString(MediaMetadataCompat.METADATA_KEY_GENRE, date == null ? null : date.toString())
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, iconUrl)
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
-                .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, trackNumber)
-                .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, totalTrackCount)
-                .build();
+                       .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
+                       .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, resolvePlayableUri())
+                       .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, desc)
+                       .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, desc)
+                       .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                       .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, iconUrl)
+                       .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                       .build();
     }
 
+    private String resolvePlayableUri() {
+        EpisodeFile file = findAvailableFile();
+        if (file != null) {
+            Uri uri = file.toUri();
+            return uri != null ? uri.toString() :SOURCE ;
+        }
+        return SOURCE;
+    }
+
+    private static final String SOURCE = "http://www.youtube.com/audiolibrary/music/Jazz_In_Paris.mp3";
 
     private long convertDurationToMS(String duration) {
         if (duration == null) {

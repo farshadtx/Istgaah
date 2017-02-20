@@ -1,13 +1,5 @@
 package com.radiofarda.istgah.bejbej.models;
 
-import android.os.Environment;
-import android.util.Log;
-
-import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
-import com.radiofarda.istgah.ui.BaseActivity;
-
-import net.lingala.zip4j.core.ZipFile;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,11 +8,17 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
+import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
+import com.radiofarda.istgah.ui.BaseActivity;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+import net.lingala.zip4j.core.ZipFile;
 
 public class EpisodeFile extends RealmObject {
     @PrimaryKey
@@ -77,11 +75,15 @@ public class EpisodeFile extends RealmObject {
                 ProcessCallback processCallback = new ProcessCallback() {
                     @Override
                     public void onSucceed(File file) {
-                        episodeFile.localCache = file.getName() + "/" + file.listFiles()[0].getName();
+                        File f = file.listFiles()[0];
+                        File audioFile = new File(f.getAbsolutePath() + ".mp3");
+                        f.renameTo(audioFile);
+                        episodeFile.localCache = file.getName() + "/" + audioFile.getName();
                     }
 
                     @Override
                     public void onError(String message) {
+                        episodeFile.localCache = null;
                         Log.e("ERROR", message);
                     }
                 };
@@ -90,6 +92,7 @@ public class EpisodeFile extends RealmObject {
 
             @Override
             public void onError(String message) {
+                episodeFile.localCache = null;
                 Log.e("ERROR", message);
             }
         });
@@ -97,7 +100,7 @@ public class EpisodeFile extends RealmObject {
     }
 
     public boolean doesAudioFileExist() {
-        return getAudioFile() != null && getAudioFile().exists();
+        return toUri() != null;
     }
 
     interface ProcessCallback {
@@ -120,7 +123,7 @@ public class EpisodeFile extends RealmObject {
     public boolean isExternalStorageReadable() {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state) ||
-                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+                    Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             return true;
         }
         return false;
@@ -130,7 +133,6 @@ public class EpisodeFile extends RealmObject {
         try {
             URL url = new URL(getZipLink());
             File file = File.createTempFile(String.format("%s-%s.zip", id, quality), null, BaseActivity.context.getCacheDir());
-            Log.e("MAZ", file.getAbsolutePath());
             long startTime = System.currentTimeMillis();
             Log.d("DownloadManager", "download begining");
             Log.d("DownloadManager", "download url:" + url);
@@ -164,11 +166,11 @@ public class EpisodeFile extends RealmObject {
 
     }
 
-    private File getAudioFile() {
+    public Uri toUri() {
         if (localCache == null || localCache.length() == 0) {
             return null;
         }
-        return new File(BaseActivity.context.getFilesDir(), localCache);
+        return Uri.fromFile(new File(BaseActivity.context.getFilesDir(), localCache));
     }
 
 
