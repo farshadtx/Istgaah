@@ -36,4 +36,4 @@ test:
    - ./gradlew test
 
   post:
-      - cp -r app/build/outputs $CIRCLE_ARTIFACTS
+      - cp -r mobile/build/outputs $CIRCLE_ARTIFACTS
