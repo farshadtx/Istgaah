@@ -31,7 +31,6 @@ import com.radiofarda.istgah.utils.MediaIDHelper;
 import com.radiofarda.istgah.utils.QueueHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -62,17 +61,6 @@ public class QueueManager {
         mCurrentIndex = 0;
     }
 
-    public boolean isSameBrowsingCategory(@NonNull String mediaId) {
-        String[] newBrowseHierarchy = MediaIDHelper.getHierarchy(mediaId);
-        MediaSessionCompat.QueueItem current = getCurrentMusic();
-        if (current == null) {
-            return false;
-        }
-        String[] currentBrowseHierarchy = MediaIDHelper.getHierarchy(
-                current.getDescription().getMediaId());
-
-        return Arrays.equals(newBrowseHierarchy, currentBrowseHierarchy);
-    }
 
     private void setCurrentQueueIndex(int index) {
         if (index >= 0 && index < mPlayingQueue.size()) {
@@ -135,13 +123,11 @@ public class QueueManager {
         // the hierarchy in MediaBrowser and the actual unique musicID. This is necessary
         // so we can build the correct playing queue, based on where the track was
         // selected from.
-        boolean canReuseQueue = false;
-        if (isSameBrowsingCategory(mediaId)) {
-            canReuseQueue = setCurrentQueueItem(mediaId);
-        }
+        boolean canReuseQueue = setCurrentQueueItem(mediaId);
+
         if (!canReuseQueue) {
             String queueTitle = mResources.getString(R.string.browse_musics_by_genre_subtitle,
-                    MediaIDHelper.extractBrowseCategoryValueFromMediaID(mediaId));
+                   mediaId);
             setCurrentQueue(queueTitle,
                     QueueHelper.getPlayingQueue(mediaId, mMusicProvider), mediaId);
         }
@@ -183,8 +169,7 @@ public class QueueManager {
             mListener.onMetadataRetrieveError();
             return;
         }
-        final String musicId = MediaIDHelper.extractMusicIDFromMediaID(
-                currentMusic.getDescription().getMediaId());
+        final String musicId = currentMusic.getDescription().getMediaId();
         MediaMetadataCompat metadata = mMusicProvider.getMusic(musicId);
         if (metadata == null) {
             throw new IllegalArgumentException("Invalid musicId " + musicId);
@@ -207,8 +192,8 @@ public class QueueManager {
                     if (currentMusic == null) {
                         return;
                     }
-                    String currentPlayingId = MediaIDHelper.extractMusicIDFromMediaID(
-                            currentMusic.getDescription().getMediaId());
+                    String currentPlayingId =
+                            currentMusic.getDescription().getMediaId();
                     if (musicId.equals(currentPlayingId)) {
                         mListener.onMetadataChanged(mMusicProvider.getMusic(currentPlayingId));
                     }

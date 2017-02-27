@@ -241,7 +241,7 @@ public class CastPlayback implements Playback {
     }
 
     private void loadMedia(String mediaId, boolean autoPlay) throws JSONException {
-        String musicId = MediaIDHelper.extractMusicIDFromMediaID(mediaId);
+        String musicId =mediaId;
         MediaMetadataCompat track = mMusicProvider.getMusic(musicId);
         if (track == null) {
             throw new IllegalArgumentException("Invalid mediaId " + mediaId);

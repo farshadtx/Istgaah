@@ -119,7 +119,8 @@ public abstract class BaseActivity extends ActionBarCastActivity implements Medi
     private void initDb() {
         Realm.init(this);
         Realm realm = Realm.getInstance(new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build());
-        RealmResults<Episode> episodes = realm.where(Episode.class).findAllSorted("date", Sort.ASCENDING);
+        //new PodcastsFetcher().deleteAll();
+        RealmResults<Episode> episodes = Episode.findAll();
         if (episodes == null || episodes.isEmpty()) {
             new PodcastsFetcher().refreshDatabase();
         }

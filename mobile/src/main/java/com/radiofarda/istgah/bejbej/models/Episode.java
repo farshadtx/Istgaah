@@ -1,24 +1,28 @@
 package com.radiofarda.istgah.bejbej.models;
 
+import android.os.AsyncTask;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.util.Log;
+
+import com.radiofarda.istgah.bejbej.network.podcast.Info;
+import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.v4.media.MediaMetadataCompat;
-import android.util.Log;
-import com.radiofarda.istgah.bejbej.network.podcast.Info;
-import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.Sort;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 import okio.ByteString;
 
-public class Episode extends RealmObject {
+public class Episode extends RealmObject implements Comparable<Episode> {
     @PrimaryKey
     @Required
     private String id;
@@ -62,23 +66,17 @@ public class Episode extends RealmObject {
         //noinspection ResourceType
 
         return new MediaMetadataCompat.Builder()
-                       .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
-                       .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, resolvePlayableUri())
-                       .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, desc)
-                       .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, desc)
-                       .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-                       .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, iconUrl)
-                       .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
-                       .build();
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, resolvePlayableUri())
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, iconUrl)
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                .build();
     }
 
     private String resolvePlayableUri() {
         EpisodeFile file = findAvailableFile();
-        if (file != null) {
-            Uri uri = file.toUri();
-            return uri != null ? uri.toString() :SOURCE ;
-        }
-        return SOURCE;
+        return file != null ? file.toUri().toString() : null;
     }
 
     private static final String SOURCE = "http://www.youtube.com/audiolibrary/music/Jazz_In_Paris.mp3";
@@ -101,6 +99,14 @@ public class Episode extends RealmObject {
 
     public static Episode findById(String id) {
         return findById(Realm.getInstance(new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build()), id);
+    }
+
+    public static Episode findByMediaItem(MediaBrowserCompat.MediaItem mediaItem) {
+        return findById(mediaItem.getMediaId());
+    }
+
+    public static RealmResults<Episode> findAll() {
+        return Realm.getInstance(new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build()).where(Episode.class).findAllSorted("date", Sort.DESCENDING);
     }
 
     public EpisodeFile findAvailableFile() {
@@ -126,4 +132,62 @@ public class Episode extends RealmObject {
         }.execute(EpisodeFile.formatId(remoteFileId, quality));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Episode episode = (Episode) o;
+
+        if (duration != episode.duration) return false;
+        if (id != null ? !id.equals(episode.id) : episode.id != null) return false;
+        if (remoteFileId != null ? !remoteFileId.equals(episode.remoteFileId) : episode.remoteFileId != null)
+            return false;
+        if (title != null ? !title.equals(episode.title) : episode.title != null) return false;
+        if (desc != null ? !desc.equals(episode.desc) : episode.desc != null) return false;
+        if (date != null ? !date.equals(episode.date) : episode.date != null) return false;
+        if (iconUrl != null ? !iconUrl.equals(episode.iconUrl) : episode.iconUrl != null)
+            return false;
+        return episodeFiles != null ? episodeFiles.equals(episode.episodeFiles) : episode.episodeFiles == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (remoteFileId != null ? remoteFileId.hashCode() : 0);
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (desc != null ? desc.hashCode() : 0);
+        result = 31 * result + (date != null ? date.hashCode() : 0);
+        result = 31 * result + (int) (duration ^ (duration >>> 32));
+        result = 31 * result + (iconUrl != null ? iconUrl.hashCode() : 0);
+        result = 31 * result + (episodeFiles != null ? episodeFiles.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Episode{" +
+                "id='" + id + '\'' +
+                ", remoteFileId='" + remoteFileId + '\'' +
+                ", title='" + title + '\'' +
+                ", desc='" + desc + '\'' +
+                ", date=" + date +
+                ", duration=" + duration +
+                ", iconUrl='" + iconUrl + '\'' +
+                ", episodeFiles=" + episodeFiles +
+                '}';
+    }
+
+    @Override
+    public int compareTo(Episode o) {
+        if (this.date == null || o.date == null) {
+            return 0;
+        }
+        return this.date.compareTo(o.date);
+    }
+
+    public String getId() {
+        return id;
+    }
 }

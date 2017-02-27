@@ -39,11 +39,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.radiofarda.istgah.R;
+import com.radiofarda.istgah.bejbej.models.Episode;
 import com.radiofarda.istgah.utils.LogHelper;
-import com.radiofarda.istgah.utils.MediaIDHelper;
 import com.radiofarda.istgah.utils.NetworkHelper;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -286,8 +287,10 @@ public class MediaBrowserFragment extends Fragment {
                 " isOnline=", NetworkHelper.isOnline(getActivity()));
     }
 
+    public static final String MEDIA_ID_ROOT = "__ROOT__";
+
     private void updateTitle() {
-        if (MediaIDHelper.MEDIA_ID_ROOT.equals(mMediaId)) {
+        if (MEDIA_ID_ROOT.equals(mMediaId)) {
             mMediaFragmentListener.setToolbarTitle(null);
             return;
         }

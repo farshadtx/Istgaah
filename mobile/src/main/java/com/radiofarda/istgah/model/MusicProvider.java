@@ -16,30 +16,26 @@
 
 package com.radiofarda.istgah.model;
 
-import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_MUSICS_BY_GENRE;
-import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_ROOT;
-import static com.radiofarda.istgah.utils.MediaIDHelper.createMediaID;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
+
+import com.radiofarda.istgah.bejbej.models.Episode;
+import com.radiofarda.istgah.utils.LogHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.MediaDescriptionCompat;
-import android.support.v4.media.MediaMetadataCompat;
-import com.radiofarda.istgah.R;
-import com.radiofarda.istgah.utils.LogHelper;
-import com.radiofarda.istgah.utils.MediaIDHelper;
+import io.realm.RealmResults;
+
 
 /**
  * Simple data provider for music tracks. The actual metadata source is delegated to a
@@ -51,8 +47,6 @@ public class MusicProvider {
     private final ConcurrentMap<String, MutableMediaMetadata> mMusicListById;
     private final Set<String> mFavoriteTracks;
     private MusicProviderSource mSource;
-    // Categorized caches for music track data:
-    private ConcurrentMap<String, List<MediaMetadataCompat>> mMusicListByGenre;
     private volatile State mCurrentState = State.NON_INITIALIZED;
 
     public MusicProvider() {
@@ -61,22 +55,10 @@ public class MusicProvider {
 
     public MusicProvider(MusicProviderSource source) {
         mSource = source;
-        mMusicListByGenre = new ConcurrentHashMap<>();
         mMusicListById = new ConcurrentHashMap<>();
         mFavoriteTracks = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     }
 
-    /**
-     * Get an iterator over the list of genres
-     *
-     * @return genres
-     */
-    public Iterable<String> getGenres() {
-        if (mCurrentState != State.INITIALIZED) {
-            return Collections.emptyList();
-        }
-        return mMusicListByGenre.keySet();
-    }
 
     /**
      * Get an iterator over a shuffled collection of all songs
@@ -93,15 +75,6 @@ public class MusicProvider {
         return shuffled;
     }
 
-    /**
-     * Get music tracks of the given genre
-     */
-    public Iterable<MediaMetadataCompat> getMusicsByGenre(String genre) {
-        if (mCurrentState != State.INITIALIZED || !mMusicListByGenre.containsKey(genre)) {
-            return Collections.emptyList();
-        }
-        return mMusicListByGenre.get(genre);
-    }
 
     /**
      * Very basic implementation of a search that filter music tracks with title containing
@@ -135,7 +108,7 @@ public class MusicProvider {
         query = query.toLowerCase(Locale.US);
         for (MutableMediaMetadata track : mMusicListById.values()) {
             if (track.metadata.getString(metadataField).toLowerCase(Locale.US)
-                              .contains(query)) {
+                    .contains(query)) {
                 result.add(track.metadata);
             }
         }
@@ -155,21 +128,21 @@ public class MusicProvider {
         MediaMetadataCompat metadata = getMusic(musicId);
         metadata = new MediaMetadataCompat.Builder(metadata)
 
-                           // set high resolution bitmap in METADATA_KEY_ALBUM_ART. This is used, for
-                           // radiofarda, on the lockscreen background when the media session is active.
-                           .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                // set high resolution bitmap in METADATA_KEY_ALBUM_ART. This is used, for
+                // radiofarda, on the lockscreen background when the media session is active.
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
 
-                           // set small version of the album art in the DISPLAY_ICON. This is used on
-                           // the MediaDescription and thus it should be small to be serialized if
-                           // necessary
-                           .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, icon)
+                // set small version of the album art in the DISPLAY_ICON. This is used on
+                // the MediaDescription and thus it should be small to be serialized if
+                // necessary
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, icon)
 
-                           .build();
+                .build();
 
         MutableMediaMetadata mutableMetadata = mMusicListById.get(musicId);
         if (mutableMetadata == null) {
             throw new IllegalStateException("Unexpected error: Inconsistent data structures in " +
-                                                    "MusicProvider");
+                    "MusicProvider");
         }
 
         mutableMetadata.metadata = metadata;
@@ -222,20 +195,6 @@ public class MusicProvider {
         }.execute();
     }
 
-    private synchronized void buildListsByGenre() {
-        ConcurrentMap<String, List<MediaMetadataCompat>> newMusicListByGenre = new ConcurrentHashMap<>();
-
-        for (MutableMediaMetadata m : mMusicListById.values()) {
-            String genre = m.metadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
-            List<MediaMetadataCompat> list = newMusicListByGenre.get(genre);
-            if (list == null) {
-                list = new ArrayList<>();
-                newMusicListByGenre.put(genre, list);
-            }
-            list.add(m.metadata);
-        }
-        mMusicListByGenre = newMusicListByGenre;
-    }
 
     private synchronized void retrieveMedia() {
         try {
@@ -261,45 +220,20 @@ public class MusicProvider {
 
     public List<MediaBrowserCompat.MediaItem> getChildren(String mediaId, Resources resources) {
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
-
-        if (!MediaIDHelper.isBrowseable(mediaId)) {
-            return mediaItems;
-        }
-
-        for (Map.Entry<String, MutableMediaMetadata> entry : mMusicListById.entrySet()) {
-            mediaItems.add(createMediaItem(entry.getValue().metadata));
+        RealmResults<Episode> allEpisodes = Episode.findAll();
+        for (Episode episode : allEpisodes) {
+            if (mMusicListById.containsKey(episode.getId())) {
+                mediaItems.add(createMediaItem(mMusicListById.get(episode.getId()).metadata));
+            }
         }
         return mediaItems;
 
     }
 
-    private MediaBrowserCompat.MediaItem createBrowsableMediaItemForRoot(Resources resources) {
-        MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-                                                     .setMediaId(MEDIA_ID_MUSICS_BY_GENRE)
-                                                     .setTitle(resources.getString(R.string.browse_genres))
-                                                     .setSubtitle(resources.getString(R.string.browse_genre_subtitle))
-                                                     .setIconUri(Uri.parse("android.resource://" +
-                                                                                   "com.radiofarda.istgah/drawable/ic_by_genre"))
-                                                     .build();
-        return new MediaBrowserCompat.MediaItem(description,
-                                                       MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
-    }
-
-    private MediaBrowserCompat.MediaItem createBrowsableMediaItemForGenre(String genre,
-                                                                          Resources resources) {
-        MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-                                                     .setMediaId(createMediaID(null, MEDIA_ID_MUSICS_BY_GENRE, genre))
-                                                     .setTitle(genre)
-                                                     .setSubtitle(resources.getString(
-                                                             R.string.browse_musics_by_genre_subtitle, genre))
-                                                     .build();
-        return new MediaBrowserCompat.MediaItem(description,
-                                                       MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
-    }
 
     private MediaBrowserCompat.MediaItem createMediaItem(MediaMetadataCompat metadata) {
         return new MediaBrowserCompat.MediaItem(metadata.getDescription(),
-                                                       MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
+                MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
     }
 
     enum State {

@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.support.v4.media.MediaMetadataCompat;
@@ -29,9 +30,7 @@ import android.text.TextUtils;
 
 import com.radiofarda.istgah.MusicService;
 import com.radiofarda.istgah.model.MusicProvider;
-import com.radiofarda.istgah.model.MusicProviderSource;
 import com.radiofarda.istgah.utils.LogHelper;
-import com.radiofarda.istgah.utils.MediaIDHelper;
 
 import java.io.IOException;
 
@@ -173,22 +172,20 @@ public class LocalPlayback implements Playback, AudioManager.OnAudioFocusChangeL
         } else {
             mState = PlaybackStateCompat.STATE_STOPPED;
             relaxResources(false); // release everything except MediaPlayer
-            MediaMetadataCompat track = mMusicProvider.getMusic(
-                    MediaIDHelper.extractMusicIDFromMediaID(item.getDescription().getMediaId()));
+            MediaMetadataCompat track = mMusicProvider.getMusic(item.getDescription().getMediaId());
 
-            //noinspection ResourceType
-            String source = track.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE);
-            if (source != null) {
-                source = source.replaceAll(" ", "%20"); // Escape spaces for URLs
-            }
-
+            Uri mediaUri = track.getDescription().getMediaUri();
             try {
+                if (mediaUri == null) {
+                    throw new IOException("The file is not downloaded yet!");
+                }
                 createMediaPlayerIfNeeded();
 
                 mState = PlaybackStateCompat.STATE_BUFFERING;
 
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mMediaPlayer.setDataSource(source);
+                mMediaPlayer.setDataSource(mediaUri.toString());
+
 
                 // Starts preparing the media player in the background. When
                 // it's done, it will call our OnPreparedListener (that is,

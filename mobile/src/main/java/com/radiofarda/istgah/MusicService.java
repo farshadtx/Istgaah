@@ -44,9 +44,11 @@ import com.radiofarda.istgah.playback.LocalPlayback;
 import com.radiofarda.istgah.playback.Playback;
 import com.radiofarda.istgah.playback.PlaybackManager;
 import com.radiofarda.istgah.playback.QueueManager;
+import com.radiofarda.istgah.ui.MediaBrowserFragment;
 import com.radiofarda.istgah.ui.NowPlayingActivity;
 import com.radiofarda.istgah.utils.CarHelper;
 import com.radiofarda.istgah.utils.LogHelper;
+import com.radiofarda.istgah.utils.MediaIDHelper;
 import com.radiofarda.istgah.utils.TvHelper;
 import com.radiofarda.istgah.utils.WearHelper;
 
@@ -54,8 +56,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_EMPTY_ROOT;
-import static com.radiofarda.istgah.utils.MediaIDHelper.MEDIA_ID_ROOT;
 
 /**
  * This class provides a MediaBrowser through a service. It exposes the media library to a browsing
@@ -297,7 +297,7 @@ public class MusicService extends MediaBrowserServiceCompat implements
             LogHelper.i(TAG, "OnGetRoot: Browsing NOT ALLOWED for unknown caller. "
                     + "Returning empty browser root so all apps can use MediaController."
                     + clientPackageName);
-            return new MediaBrowserServiceCompat.BrowserRoot(MEDIA_ID_EMPTY_ROOT, null);
+            return new MediaBrowserServiceCompat.BrowserRoot(MediaIDHelper.MEDIA_ID_EMPTY_ROOT, null);
         }
         //noinspection StatementWithEmptyBody
         if (CarHelper.isValidCarPackage(clientPackageName)) {
@@ -314,14 +314,14 @@ public class MusicService extends MediaBrowserServiceCompat implements
             // on onLoadChildren, handle it accordingly.
         }
 
-        return new BrowserRoot(MEDIA_ID_ROOT, null);
+        return new BrowserRoot(MediaBrowserFragment.MEDIA_ID_ROOT, null);
     }
 
     @Override
     public void onLoadChildren(@NonNull final String parentMediaId,
                                @NonNull final Result<List<MediaItem>> result) {
         LogHelper.d(TAG, "OnLoadChildren: parentMediaId=", parentMediaId);
-        if (MEDIA_ID_EMPTY_ROOT.equals(parentMediaId)) {
+        if (MediaIDHelper.MEDIA_ID_EMPTY_ROOT.equals(parentMediaId)) {
             result.sendResult(new ArrayList<MediaItem>());
         } else if (mMusicProvider.isInitialized()) {
             // if music library is ready, return immediately
