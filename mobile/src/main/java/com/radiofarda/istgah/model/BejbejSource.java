@@ -24,6 +24,7 @@ import com.radiofarda.istgah.utils.LogHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -41,6 +42,7 @@ public class BejbejSource implements MusicProviderSource {
             ArrayList<MediaMetadataCompat> tracks = new ArrayList<>();
             Realm realm = Realm.getInstance(new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build());
             RealmResults<Episode> episodes = realm.where(Episode.class).findAllSorted("date", Sort.DESCENDING);
+
             for (Episode episode : episodes) {
                 tracks.add(episode.toMediaMetadataCompat());
             }

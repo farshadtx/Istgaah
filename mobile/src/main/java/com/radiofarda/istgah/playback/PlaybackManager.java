@@ -17,6 +17,7 @@
 package com.radiofarda.istgah.playback;
 
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -157,7 +158,7 @@ public class PlaybackManager implements Playback.Callback {
         if (mediaId == null) {
             return;
         }
-        String musicId = MediaIDHelper.extractMusicIDFromMediaID(mediaId);
+        String musicId = mediaId;
         int favoriteIcon = mMusicProvider.isFavorite(musicId) ?
                 R.drawable.ic_star_on : R.drawable.ic_star_off;
         LogHelper.d(TAG, "updatePlaybackState, setting Favorite custom action of music ",
@@ -343,7 +344,7 @@ public class PlaybackManager implements Playback.Callback {
                 if (currentMusic != null) {
                     String mediaId = currentMusic.getDescription().getMediaId();
                     if (mediaId != null) {
-                        String musicId = MediaIDHelper.extractMusicIDFromMediaID(mediaId);
+                        String musicId = mediaId;
                         mMusicProvider.setFavorite(musicId, !mMusicProvider.isFavorite(musicId));
                     }
                 }

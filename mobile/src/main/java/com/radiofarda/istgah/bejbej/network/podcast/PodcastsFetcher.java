@@ -48,5 +48,12 @@ public class PodcastsFetcher {
         });
     }
 
+    public static void deleteAll() {
+        Realm realm = Realm.getInstance(new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build());
+        realm.beginTransaction();
+        realm.deleteAll();
+        realm.commitTransaction();
+    }
+
 
 }

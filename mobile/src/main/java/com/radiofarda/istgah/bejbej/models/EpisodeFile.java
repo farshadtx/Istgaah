@@ -1,5 +1,14 @@
 package com.radiofarda.istgah.bejbej.models;
 
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
+
+import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
+import com.radiofarda.istgah.ui.BaseActivity;
+
+import net.lingala.zip4j.core.ZipFile;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,17 +17,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import android.net.Uri;
-import android.os.Environment;
-import android.util.Log;
-import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
-import com.radiofarda.istgah.ui.BaseActivity;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
-import net.lingala.zip4j.core.ZipFile;
 
 public class EpisodeFile extends RealmObject {
     @PrimaryKey
@@ -74,11 +77,11 @@ public class EpisodeFile extends RealmObject {
             public void onSucceed(File file) {
                 ProcessCallback processCallback = new ProcessCallback() {
                     @Override
-                    public void onSucceed(File file) {
-                        File f = file.listFiles()[0];
+                    public void onSucceed(File dir) {
+                        File f = dir.listFiles()[0];
                         File audioFile = new File(f.getAbsolutePath() + ".mp3");
                         f.renameTo(audioFile);
-                        episodeFile.localCache = file.getName() + "/" + audioFile.getName();
+                        episodeFile.localCache = audioFile.getPath();
                     }
 
                     @Override
@@ -123,7 +126,7 @@ public class EpisodeFile extends RealmObject {
     public boolean isExternalStorageReadable() {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state) ||
-                    Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             return true;
         }
         return false;
@@ -170,7 +173,7 @@ public class EpisodeFile extends RealmObject {
         if (localCache == null || localCache.length() == 0) {
             return null;
         }
-        return Uri.fromFile(new File(BaseActivity.context.getFilesDir(), localCache));
+        return Uri.fromFile(new File(localCache));
     }
 
 
@@ -219,6 +222,46 @@ public class EpisodeFile extends RealmObject {
 
     public void update() {
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EpisodeFile that = (EpisodeFile) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (quality != null ? !quality.equals(that.quality) : that.quality != null) return false;
+        if (zipLink != null ? !zipLink.equals(that.zipLink) : that.zipLink != null) return false;
+        if (zipPass != null ? !zipPass.equals(that.zipPass) : that.zipPass != null) return false;
+        if (localCache != null ? !localCache.equals(that.localCache) : that.localCache != null)
+            return false;
+        return size != null ? size.equals(that.size) : that.size == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (quality != null ? quality.hashCode() : 0);
+        result = 31 * result + (zipLink != null ? zipLink.hashCode() : 0);
+        result = 31 * result + (zipPass != null ? zipPass.hashCode() : 0);
+        result = 31 * result + (localCache != null ? localCache.hashCode() : 0);
+        result = 31 * result + (size != null ? size.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "EpisodeFile{" +
+                "id='" + id + '\'' +
+                ", quality='" + quality + '\'' +
+                ", zipLink='" + zipLink + '\'' +
+                ", zipPass='" + zipPass + '\'' +
+                ", localCache='" + localCache + '\'' +
+                ", size='" + size + '\'' +
+                '}';
     }
 }
 

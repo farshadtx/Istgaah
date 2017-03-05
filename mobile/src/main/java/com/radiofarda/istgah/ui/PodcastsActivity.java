@@ -25,6 +25,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.text.TextUtils;
+
 import com.radiofarda.istgah.R;
 import com.radiofarda.istgah.bejbej.models.Episode;
 import com.radiofarda.istgah.bejbej.models.EpisodeQuality;
@@ -88,7 +89,7 @@ public class PodcastsActivity extends BaseActivity
         }
         if (item.isPlayable()) {
             MediaControllerCompat.getMediaController(this).getTransportControls()
-                                 .playFromUri(item.getDescription().getMediaUri(), null);
+                                 .playFromMediaId(item.getDescription().getMediaId(), null);
         } else if (item.isBrowsable()) {
             navigateToBrowser(item.getMediaId());
         } else {
