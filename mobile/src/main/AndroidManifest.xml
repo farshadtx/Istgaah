@@ -21,8 +21,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -61,20 +62,19 @@
         <!-- Placeholder activity for phone UI -->
         <activity
             android:name=".ui.LiveStreamActivity"
-            android:label="@string/app_name"></activity>
+            android:label="@string/app_name"/>
 
         <!-- Proxy activity that opens either the NowPlaying TV or the mobile UI, depending on
         the current environment -->
         <activity
             android:name=".ui.NowPlayingActivity"
-            android:icon="@drawable/ic_launcher"></activity>
+            android:icon="@drawable/ic_launcher"/>
 
 
-        <!--
-             (OPTIONAL) use this meta data to indicate which icon should be
-             used in Android Auto media notifications (for radiofarda, when the
-             music changes and the user is looking at another app)
-        -->
+        <activity
+            android:name=".ui.RecorderActivity"
+            android:label="Recorder" />
+
         <meta-data
             android:name="com.google.android.gms.car.notification.SmallIcon"
             android:resource="@drawable/ic_notification" />
