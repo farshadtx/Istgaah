@@ -9,17 +9,17 @@ general:
 machine:
     environment:
         ANDROID_HOME: /usr/local/android-sdk-linux
-        ANDROID_NDK_HOME: ${ANDROID_NDK}
         ADB_INSTALL_TIMEOUT: 60
     java:
         version: oraclejdk8
 
 dependencies:
     pre:
-        - echo y | android update sdk --no-ui --all --filter "platform-tools, tools"
-        - echo y | android update sdk --no-ui --all --filter "android-24, build-tools-25.0.2"
+        - echo y | android update sdk c "platform-tools, tools"
+        - echo y | android update sdk --no-ui --all --filter "android-25, build-tools-25.0.2"
         - echo y | android update sdk --no-ui --all --filter "extra-android-m2repository"
         - echo y | android update sdk --no-ui --all --filter "extra-android-support"
+        - echo y | android update sdk --no-ui --all --filter "extra-google-m2repository"
     cache_directories:
         - /usr/local/android-sdk-linux/tools
         - /usr/local/android-sdk-linux/build-tools/25.0.2
