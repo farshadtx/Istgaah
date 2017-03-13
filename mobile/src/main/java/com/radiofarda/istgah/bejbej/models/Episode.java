@@ -93,7 +93,7 @@ public class Episode extends RealmObject implements Comparable<Episode> {
         }
     }
 
-    public static Episode findById(Realm realm, String id) {
+    private static Episode findById(Realm realm, String id) {
         return realm.where(Episode.class).equalTo("id", id).findFirst();
     }
 
