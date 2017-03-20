@@ -11,6 +11,7 @@ import com.radiofarda.istgah.bejbej.network.podcast.ProgramList;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -86,7 +87,9 @@ public class Episode extends RealmObject implements Comparable<Episode> {
             return 0;
         }
         try {
-            return new SimpleDateFormat("HH:mm:ss").parse(duration).getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return sdf.parse("1970-01-01 " + duration).getTime();
         } catch (ParseException e) {
             Log.e(".", e.getMessage());
             return 0;
